@@ -1,11 +1,27 @@
 const express = require('express');
 const { createServer } = require('http');
 const io = require('socket.io');
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
 const haiku = require('./haiku');
 
-const app = express();
-const server = createServer(app);
+const app = express(),
+    options = process.env.NODE_ENV !== 'production'? {} : {
+    key: fs.readFileSync('/etc/ssl/private/nginx-selfsigned.key'),
+    cert: fs.readFileSync('/etc/ssl/certs/nginx-selfsigned.crt')
+    //key: fs.readFileSync(__dirname + '/../ssl_file.pem'),
+   // cert: fs.readFileSync(__dirname + '/../ssl_file.crt')
+  },
+  server = process.env.NODE_ENV !== 'production' ?
+                                                  http.createServer(app) :
+                                                  https.createServer(options, app);
+
 const userIds = {};
+const phonebook = {
+                    "1":{ id: 1, name: "Tuan" }
+                    ,"2":{ id: 1, name: "Ngoc-Anh" }
+                  };
 const noop = () => {};
 
 app.use('/', express.static(`${process.cwd()}/../client`));
@@ -15,7 +31,7 @@ app.use('/', express.static(`${process.cwd()}/../client`));
  */
 function randomID(callback) {
   const id = haiku();
-  if (id in userIds) setTimeout(() => haiku(callback), 5);
+  if (id in userIds) setTimeout(() => randomID(callback), 5);
   else callback(id);
 }
 
@@ -40,27 +56,40 @@ function sendTo(to, done, fail) {
 function initSocket(socket) {
   let id;
   socket
-    .on('init', () => {
-      randomID((_id) => {
-        id = _id;
-        userIds[id] = socket;
-        socket.emit('init', { id });
-      });
+    .on('init', (data) => {
+      console.log('init', data);
+      let foundInBook = false;
+      if(data.id) {
+        if(phonebook[''+data.id]) {
+          foundInBook = true;
+          id = phonebook[''+data.id].name;
+          userIds[id] = socket;
+          socket.emit('init', { id });
+        }
+      }
+      if(!foundInBook) {
+        randomID((_id) => {
+          id = _id;
+          userIds[id] = socket;
+          socket.emit('init', { id });
+        });
+      }
     })
     .on('request', (data) => {
-      sendTo(data.to, to => to.emit('request', { from: id }));
+      sendTo(data.to, receiver => receiver.emit('request', { from: id }));
     })
     .on('call', (data) => {
       sendTo(
         data.to,
-        to => to.emit('call', { ...data, from: id }),
+        receiver => receiver.emit('call', { ...data, from: id }),
         () => socket.emit('failed')
       );
     })
     .on('end', (data) => {
-      sendTo(data.to, to => to.emit('end'));
+      sendTo(data.to, receiver => receiver.emit('end'));
     })
     .on('disconnect', () => {
+      if(!id) return;
       delete userIds[id];
       console.log(id, 'disconnected');
     });

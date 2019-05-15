@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { render } from 'react-dom';
+import queryString from 'query-string'
 import _ from 'lodash';
 import socket from './socket';
 import PeerConnection from './PeerConnection';
@@ -7,6 +8,7 @@ import MainWindow from './MainWindow';
 import CallWindow from './CallWindow';
 import CallModal from './CallModal';
 
+const MERCHANT_ID=1;
 class App extends Component {
   constructor(props) {
     super(props);
@@ -26,6 +28,9 @@ class App extends Component {
   }
 
   componentDidMount() {
+    // console.log('path', window.location.search);
+    const values = queryString.parse(window.location.search)
+    let userId = values.userId;
     socket
       .on('init', data => this.setState({ clientId: data.id }))
       .on('request', data => this.setState({ callModal: 'active', callFrom: data.from }))
@@ -36,7 +41,7 @@ class App extends Component {
         } else this.pc.addIceCandidate(data.candidate);
       })
       .on('end', this.endCall.bind(this, false))
-      .emit('init');
+      .emit('init',{id:userId, mId:MERCHANT_ID});
   }
 
   startCall(isCaller, friendID, config) {

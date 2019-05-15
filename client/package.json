@@ -18,6 +18,7 @@
     "mini-css-extract-plugin": "0.4.1",
     "node-sass": "4.9.1",
     "proptypes": "1.1.0",
+    "query-string": "6.5.0",
     "react": "16.4.1",
     "react-dom": "16.4.1",
     "sass-loader": "7.0.3",
@@ -42,8 +43,8 @@
     "build": "webpack --config webpack-prod.config.js"
   },
   "engines": {
-    "node": "8.11.3",
-    "yarn": "1.7.0"
+    "node": "11.6.0",
+    "yarn": "1.12.3"
   },
   "author": "Minh Son Nguyen",
   "license": "MIT"

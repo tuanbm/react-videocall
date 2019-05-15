@@ -1,2 +1,4 @@
 client/dist/
 client/index.html
+server/node_modules
+client/node_modules

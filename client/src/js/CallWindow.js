@@ -73,8 +73,8 @@ class CallWindow extends Component {
     const { status } = this.props;
     return (
       <div className={classnames('call-window', status)}>
-        <video id="peerVideo" ref={el => this.peerVideo = el} autoPlay />
-        <video id="localVideo" ref={el => this.localVideo = el} autoPlay muted />
+        <video id="peerVideo" ref={el => this.peerVideo = el} autoPlay controls={true} playsInline/>
+        <video id="localVideo" ref={el => this.localVideo = el} autoPlay muted controls={true} playsInline/>
         <div className="video-control">
           {this.renderControlButtons()}
           <button

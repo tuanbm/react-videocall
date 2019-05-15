@@ -50,9 +50,9 @@ const configs = addBaseConfig({
   },
   plugins: [
     new MiniCssExtractPlugin({ filename: 'css/[name].min.css' }),
-    new DefinePlugin({ SOCKET_HOST: '' }),
+    new DefinePlugin({ SOCKET_HOST: JSON.stringify(`mobifa.vn:5000`) }),
     new HtmlWebpackPlugin({
-      title: 'React VideoCall - Minh Son Nguyen',
+      title: 'VideoCall',
       filename: path.join(__dirname, 'index.html'),
       template: 'src/html/index.html'
     })
